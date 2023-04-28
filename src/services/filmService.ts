@@ -1,10 +1,5 @@
-export const films = [
-  {
-    title: "Superman",
-    year: "1984"
-  },
-  {
-    name: "Terminator 2",
-    age: "1995"
-  }
-];
+import generateFilmData from './scraper';
+
+export async function getFilmData() {
+  return await generateFilmData();
+}

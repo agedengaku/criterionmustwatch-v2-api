@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
-import { films } from '../services/filmService';
+import { getFilmData } from '../services/filmService';
 
-export const getFilms = (_: Request, res: Response) => {
+export const getFilms = async (_: Request, res: Response) => {
+  const films = await getFilmData();
   res.send(films);
 };
