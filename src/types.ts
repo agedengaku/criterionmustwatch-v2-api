@@ -3,3 +3,7 @@ export type Film = {
   link: string | undefined,
   image: string | undefined
 };
+
+export type FilmWithReview = Film & {
+  review: string | undefined;
+};
