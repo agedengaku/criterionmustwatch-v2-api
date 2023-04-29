@@ -24,27 +24,30 @@ async function getRottenTomatoesData() {
   }
 }
 
+function checkIfUndefinedOrEmpty(review: number | string | undefined) {
+  if (review === undefined
+    || (typeof review === 'string' && isNaN(parseInt(review)))
+  ) {
+    review = -1;
+  } else {
+    if (typeof review === 'string') review = parseInt(review);
+  }  
+
+  return review;
+}
+
 function sortFilms(filmCollectionWithReviews: Film[]) {
   return filmCollectionWithReviews.sort((a, b) => {
-    if (b.review === undefined
-      || (typeof b.review === 'string' && isNaN(parseInt(b.review)))
-    ) {
-      b.review = -1;
-    } else {
-      if (typeof b.review === 'string') b.review = parseInt(b.review);
-    }
+    // return -1 if the review is empty (no score) or undefined (not found on Rotten Tomatoes)
+    b.review = checkIfUndefinedOrEmpty(b.review);
+    a.review = checkIfUndefinedOrEmpty(a.review);
 
-    if (a.review === undefined
-      || (typeof a.review === 'string' && isNaN(parseInt(a.review))))
-    {
-      a.review = -1;
-    } else {
-      if (typeof a.review === 'string') a.review = parseInt(a.review);
-    }
-
+    // Sort by review score, descending order
     if (a.review > b.review) return -1;
     if (a.review < b.review) return 1;
     
+    // If review scores are the same, sort by title
+    // But remove "The " from the title before comparing them
     const titleA = a.title.replace(/^The /, '');
     const titleB = b.title.replace(/^The /, '');
 
