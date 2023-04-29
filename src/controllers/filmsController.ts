@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { getLeavingFilmsWithReviews } from '../services/filmService';
+import { getSortedLeavingFilmsCollectionWithReviews } from '../services/filmService';
 
-export const getFilms = async (_: Request, res: Response) => {
-  const films = await getLeavingFilmsWithReviews();
-  
+export const getLeavingFilms = async (_: Request, res: Response) => {
+  const films = await getSortedLeavingFilmsCollectionWithReviews();
+
   res.send(films);
 };

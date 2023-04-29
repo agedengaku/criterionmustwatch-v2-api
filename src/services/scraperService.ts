@@ -2,38 +2,20 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import type { Film } from '../types';
 
-const baseLeavingUrl = 'https://www.criterionchannel.com/leaving-';
-
-function generateCurrentMonthLastDayDate():string {
-  const year = new Date().getFullYear();
-  const month = new Date().getMonth() + 1;
-  const lastDate = new Date(year, month, 0);
-  
-  return lastDate.toLocaleString('en-US', {month: 'long', day: 'numeric'})
-    .toLowerCase()
-    .replace(/ /g,"-");
-}
-
-function leavingUrl() {
-  const lastDayDate = generateCurrentMonthLastDayDate();
-  
-  return baseLeavingUrl + lastDayDate + '?page=';
-}
-
 function setFilmData($:cheerio.Root, el:cheerio.Element) {    
   const title = ($(el).find(".browse-item-title").find('strong').text()).trim().replace(/ \. \. \./g, '...');
-  const link = $(el).find(".browse-item-title").find('a').attr('href');
+  const criterionLink = $(el).find(".browse-item-title").find('a').attr('href');
   const image = $(el).find("img").attr('src');
 
-  return { title, link, image };
+  return { title, criterionLink, image };
 }
 
-async function scrapeFilms(pageNumber: number) {
+async function scrapeFilms(url: string) {
   let filmList: Film[] = [];
   let hasMorePages = false;
 
   try {
-    const { data } = await axios.get(leavingUrl() + pageNumber);
+    const { data } = await axios.get(url);
     const $ = cheerio.load(data);
     const filmItems = $(".js-collection-item");
 
@@ -53,13 +35,14 @@ async function scrapeFilms(pageNumber: number) {
 }
 
 
-export default async function generateFilmsCollection() {
+export default async function generateFilmsCollection(url: string) {
   const finalFilmList = [];
   let pageNumber = 1;
 
   while (true) {
     try {
-      const { filmList, hasMorePages } = await scrapeFilms(pageNumber);
+      const urlWithPageNumber = url + pageNumber;
+      const { filmList, hasMorePages } = await scrapeFilms(urlWithPageNumber);
       
       finalFilmList.push(...filmList);
 

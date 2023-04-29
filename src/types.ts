@@ -1,6 +1,6 @@
 export type Film = { 
   title: string,
-  link: string | undefined,
+  criterionLink: string | undefined,
   image: string | undefined,
   review?: number | string | undefined,
   rottenLink?: string | undefined,

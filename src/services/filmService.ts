@@ -69,8 +69,26 @@ async function appendReviews(filmsCollection: Film[]) {
   }
 }
 
-export async function getLeavingFilmsWithReviews() {
-  const filmsCollection = await generateFilmsCollection();
+function generateCurrentMonthLastDayDate():string {
+  const year = new Date().getFullYear();
+  const month = new Date().getMonth() + 1;
+  const lastDate = new Date(year, month, 0);
+  
+  return lastDate.toLocaleString('en-US', {month: 'long', day: 'numeric'})
+    .toLowerCase()
+    .replace(/ /g,"-");
+}
+
+const baseLeavingUrl = 'https://www.criterionchannel.com/leaving-';
+
+function leavingUrl() {
+  const lastDayDate = generateCurrentMonthLastDayDate();
+  
+  return baseLeavingUrl + lastDayDate + '?page=';
+}
+
+export async function getSortedLeavingFilmsCollectionWithReviews() {
+  const filmsCollection = await generateFilmsCollection(leavingUrl());
 
   return await appendReviews(filmsCollection);
 }
