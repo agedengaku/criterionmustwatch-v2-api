@@ -1,13 +1,7 @@
-import generateFilmData from './scraperService';
+import generateFilmsCollection from './scraperService';
 import type { Film } from '../types'; 
 import fs from 'fs';
 import path from 'path';
-
-export async function getFilmData() {
-  const filmCollection = await generateFilmData();
-
-  return await appendReviews(filmCollection);
-}
 
 const filePath = path.resolve(__dirname, '../../public', 'rotten_tomatoes.json');
 
@@ -36,8 +30,8 @@ function checkIfUndefinedOrEmpty(review: number | string | undefined) {
   return review;
 }
 
-function sortFilms(filmCollectionWithReviews: Film[]) {
-  return filmCollectionWithReviews.sort((a, b) => {
+function sortFilms(filmsCollectionWithReviews: Film[]) {
+  return filmsCollectionWithReviews.sort((a, b) => {
     // return -1 if the review is empty (no score) or undefined (not found on Rotten Tomatoes)
     b.review = checkIfUndefinedOrEmpty(b.review);
     a.review = checkIfUndefinedOrEmpty(a.review);
@@ -55,10 +49,10 @@ function sortFilms(filmCollectionWithReviews: Film[]) {
   });
 }
 
-async function appendReviews(filmCollection: Film[]) {
+async function appendReviews(filmsCollection: Film[]) {
   try {
     const rottenTomatoesData = await getRottenTomatoesData();
-    const filmCollectionWithReviews = filmCollection.map(film => {
+    const filmsCollectionWithReviews = filmsCollection.map(film => {
       const matchedFilm = rottenTomatoesData.find((rottenFilm: any) => film.title === rottenFilm.title);
 
       if (matchedFilm) {
@@ -69,8 +63,14 @@ async function appendReviews(filmCollection: Film[]) {
       return film;
     });
 
-    return sortFilms(filmCollectionWithReviews);
+    return sortFilms(filmsCollectionWithReviews);
   } catch (error) {
     console.error('Error fetching data:', error);
   }
+}
+
+export async function getLeavingFilmsWithReviews() {
+  const filmsCollection = await generateFilmsCollection();
+
+  return await appendReviews(filmsCollection);
 }
