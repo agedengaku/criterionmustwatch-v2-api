@@ -11,7 +11,7 @@ function setFilmData($:cheerio.Root, el:cheerio.Element) {
 }
 
 async function scrapeFilms(url: string) {
-  let filmList: Film[] = [];
+  const filmList: Film[] = [];
   let hasMorePages = false;
 
   try {
@@ -24,6 +24,7 @@ async function scrapeFilms(url: string) {
 
       if (film) filmList.push(film);
     });
+
     // The site will have a "load more" button if there are more films to scrape
     hasMorePages = $('.js-load-more-link').length > 0;
   } catch (err) {
@@ -36,7 +37,7 @@ async function scrapeFilms(url: string) {
 
 
 export default async function generateFilmsCollection(url: string) {
-  const finalFilmList = [];
+  const finalFilmList: Film[] = [];
   let pageNumber = 1;
 
   while (true) {
@@ -47,12 +48,13 @@ export default async function generateFilmsCollection(url: string) {
       finalFilmList.push(...filmList);
 
       if (!hasMorePages) break;
-
-      pageNumber++;
     } catch (err) {
       console.error('An error occurred while generating film data:', err);
+
       break;
     }
+
+    pageNumber++;
   } 
 
   return finalFilmList;

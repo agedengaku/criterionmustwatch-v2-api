@@ -1,5 +1,5 @@
 import generateFilmsCollection from './scraperService';
-import type { Film } from '../types'; 
+import type { Film, RottenFilm } from '../types'; 
 import fs from 'fs';
 import path from 'path';
 
@@ -8,9 +8,8 @@ const filePath = path.resolve(__dirname, '../../public', 'rotten_tomatoes.json')
 async function getRottenTomatoesData() {
   try {
     const data = await fs.promises.readFile(filePath, 'utf-8');
-    const jsonData = JSON.parse(data);
 
-    return jsonData;
+    return JSON.parse(data);
   } catch (error) {
     console.error('Error reading file:', error);
 
@@ -19,13 +18,8 @@ async function getRottenTomatoesData() {
 }
 
 function checkIfUndefinedOrEmpty(review: number | string | undefined) {
-  if (review === undefined
-    || (typeof review === 'string' && isNaN(parseInt(review)))
-  ) {
-    review = -1;
-  } else {
-    if (typeof review === 'string') review = parseInt(review);
-  }  
+  if (review === undefined || (typeof review === 'string' && isNaN(parseInt(review)))) review = -1;
+  else if (typeof review === 'string') review = parseInt(review);  
 
   return review;
 }
@@ -40,11 +34,11 @@ function sortFilms(filmsCollectionWithReviews: Film[]) {
     if (a.review > b.review) return -1;
     if (a.review < b.review) return 1;
     
-    // If review scores are the same, sort by title
-    // But remove "The " from the title before comparing them
+    // If review scores are the same, remove "The " from the title...
     const titleA = a.title.replace(/^The /, '');
     const titleB = b.title.replace(/^The /, '');
 
+    // ...before sorting them by title in alphabetical order
     return titleA.localeCompare(titleB);
   });
 }
@@ -53,7 +47,7 @@ async function appendReviews(filmsCollection: Film[]) {
   try {
     const rottenTomatoesData = await getRottenTomatoesData();
     const filmsCollectionWithReviews = filmsCollection.map(film => {
-      const matchedFilm = rottenTomatoesData.find((rottenFilm: any) => film.title === rottenFilm.title);
+      const matchedFilm = rottenTomatoesData.find((rottenFilm: RottenFilm) => film.title === rottenFilm.title);
 
       if (matchedFilm) {
         film.review = matchedFilm.tomatoMeter;
@@ -69,7 +63,7 @@ async function appendReviews(filmsCollection: Film[]) {
   }
 }
 
-function generateCurrentMonthLastDayDate():string {
+function generateCurrentMonthLastDayDate() {
   const year = new Date().getFullYear();
   const month = new Date().getMonth() + 1;
   const lastDate = new Date(year, month, 0);
