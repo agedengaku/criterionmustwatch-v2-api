@@ -68,7 +68,7 @@ async function scrapeFilms(pageNumber: number) {
 }
 
 function assignValuesToFilm($:cheerio.Root, el:cheerio.Element) {    
-  const title = ($(el).find(".browse-item-title").find('strong').text()).trim();
+  const title = ($(el).find(".browse-item-title").find('strong').text()).trim().replace(/ \. \. \./g, '...');
   const link = $(el).find(".browse-item-title").find('a').attr('href');
   const image = $(el).find("img").attr('src');
 
