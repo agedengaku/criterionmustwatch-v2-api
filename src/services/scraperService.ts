@@ -1,9 +1,10 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
+import type { Film } from '../types';
 
 const baseLeavingUrl = 'https://www.criterionchannel.com/leaving-';
 
-function getLastDayOfTheCurrentMonth():string {
+function generateCurrentMonthLastDayDate():string {
   const year = new Date().getFullYear();
   const month = new Date().getMonth() + 1;
   const lastDate = new Date(year, month, 0);
@@ -14,7 +15,7 @@ function getLastDayOfTheCurrentMonth():string {
 }
 
 function leavingUrl() {
-  const lastDayDate = getLastDayOfTheCurrentMonth();
+  const lastDayDate = generateCurrentMonthLastDayDate();
   
   return baseLeavingUrl + lastDayDate + '?page=';
 }
@@ -33,7 +34,7 @@ export default async function generateFilmData() {
       finalFilmList.push(...filmList); 
       page++;
     } catch (err) {
-      console.error('oopsie');
+      console.error('An error occurred while generating film data:', err);
     }
   } 
 
@@ -46,7 +47,8 @@ function resetFlags() {
 }
 
 async function scrapeFilms() {
-  let filmList: { title: string, link: string | undefined, image: string | undefined }[] = [];
+  let filmList: Film[] = [];
+
   try {
     const { data } = await axios.get(leavingUrl() + page);
     const $ = cheerio.load(data);
@@ -57,12 +59,11 @@ async function scrapeFilms() {
 
       if (film) filmList.push(film);
     });
-
     // The site will have a "load more" button if there are more films to scrape
-    hasMorePages = $('.js-load-more-link').length > 0 ? true: false;
+    hasMorePages = $('.js-load-more-link').length > 0;
   } catch (err) {
     hasMorePages = false;
-    console.error('an error has occurred', err);
+    console.error('An error has occurred scraping film list:', err);
   }  
 
   return filmList;
