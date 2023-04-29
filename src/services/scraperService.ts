@@ -20,37 +20,35 @@ function leavingUrl() {
   return baseLeavingUrl + lastDayDate + '?page=';
 }
 
-let page = 1;
-let hasMorePages = true;
 
 export default async function generateFilmData() {
   const finalFilmList = [];
+  let pageNumber = 1;
 
-  resetFlags();
-
-  while (hasMorePages) {
+  while (true) {
     try {
-      const filmList = await scrapeFilms();
-      finalFilmList.push(...filmList); 
-      page++;
+      const { filmList, hasMorePages } = await scrapeFilms(pageNumber);
+      
+      finalFilmList.push(...filmList);
+
+      if (!hasMorePages) break;
+
+      pageNumber++;
     } catch (err) {
       console.error('An error occurred while generating film data:', err);
+      break;
     }
   } 
 
   return finalFilmList;
 }
 
-function resetFlags() {
-  page = 1;
-  hasMorePages = true;
-}
-
-async function scrapeFilms() {
+async function scrapeFilms(pageNumber: number) {
   let filmList: Film[] = [];
+  let hasMorePages = false;
 
   try {
-    const { data } = await axios.get(leavingUrl() + page);
+    const { data } = await axios.get(leavingUrl() + pageNumber);
     const $ = cheerio.load(data);
     const filmItems = $(".js-collection-item");
 
@@ -62,11 +60,11 @@ async function scrapeFilms() {
     // The site will have a "load more" button if there are more films to scrape
     hasMorePages = $('.js-load-more-link').length > 0;
   } catch (err) {
-    hasMorePages = false;
     console.error('An error has occurred scraping film list:', err);
+    hasMorePages = false;
   }  
 
-  return filmList;
+  return { filmList, hasMorePages };
 }
 
 function assignValuesToFilm($:cheerio.Root, el:cheerio.Element) {    
