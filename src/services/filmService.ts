@@ -75,14 +75,15 @@ function generateCurrentMonthLastDayDate() {
 
 const baseLeavingUrl = 'https://www.criterionchannel.com/leaving-';
 
-function leavingUrl() {
+function generateLeavingUrl() {
   const lastDayDate = generateCurrentMonthLastDayDate();
   
   return baseLeavingUrl + lastDayDate + '?page=';
 }
 
 export async function getSortedLeavingFilmsCollectionWithReviews() {
-  const filmsCollection = await generateFilmsCollection(leavingUrl());
+  const leavingUrl = generateLeavingUrl();
+  const filmsCollection = await generateFilmsCollection(leavingUrl);
 
   return await appendReviews(filmsCollection);
 }
