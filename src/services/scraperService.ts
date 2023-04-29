@@ -72,5 +72,5 @@ function assignValuesToFilm($:cheerio.Root, el:cheerio.Element) {
   const link = $(el).find(".browse-item-title").find('a').attr('href');
   const image = $(el).find("img").attr('src');
 
-  return { title, link, image, review: '' };
+  return { title, link, image };
 }
