@@ -20,6 +20,9 @@ async function scrapeFilms(url: string) {
     const filmItems = $(".js-collection-item");
 
     filmItems.each((_:number, el:cheerio.Element) => {
+      const filmId = $(el).attr('data-item-id');
+      const tooltipText = $(`#collection-tooltip-${filmId}`).find('p').first().text();
+      console.log('tooltipText: ', tooltipText);
       const film = setFilmData($, el);
 
       if (film) filmList.push(film);
