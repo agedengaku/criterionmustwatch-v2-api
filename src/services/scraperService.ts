@@ -10,6 +10,17 @@ function setFilmData($:cheerio.Root, el:cheerio.Element) {
   return { title, criterionLink, image };
 }
 
+function getDirectorAndYear(tooltipText: string) {  
+  const regex = /Directed by (.+?) •/;
+  const match = regex.exec(tooltipText);
+  const director = match ? match[1].replace(/(, and|,|and) .*/, '') : null;
+
+  const yearMatch = tooltipText.match(/\d{4}/);
+  const year = yearMatch ? yearMatch[0] : null;
+  
+  return { director, year }
+}
+
 async function scrapeFilms(url: string) {
   const filmList: Film[] = [];
   let hasMorePages = false;
@@ -22,7 +33,12 @@ async function scrapeFilms(url: string) {
     filmItems.each((_:number, el:cheerio.Element) => {
       const filmId = $(el).attr('data-item-id');
       const tooltipText = $(`#collection-tooltip-${filmId}`).find('p').first().text();
-      console.log('tooltipText: ', tooltipText);
+      const { director, year } = getDirectorAndYear(tooltipText);
+      console.log(tooltipText);
+      console.log('\n');
+      console.log(director);
+      console.log(year);
+      console.log('\n')
       const film = setFilmData($, el);
 
       if (film) filmList.push(film);
