@@ -7,18 +7,31 @@ function setFilmData($:cheerio.Root, el:cheerio.Element) {
   const criterionLink = $(el).find(".browse-item-title").find('a').attr('href');
   const image = $(el).find("img").attr('src');
 
-  return { title, criterionLink, image };
+  const filmId = $(el).attr('data-item-id');
+  const tooltipText = $(`#collection-tooltip-${filmId}`).find('p').first().text();
+  const director = getDirector(tooltipText);
+  const year = getYear(tooltipText);
+
+  return { 
+    title,
+    criterionLink,
+    image,
+    director,
+    year
+  };
 }
 
-function getDirectorAndYear(tooltipText: string) {  
+function getDirector(tooltipText: string) {
   const regex = /Directed by (.+?) •/;
   const match = regex.exec(tooltipText);
-  const director = match ? match[1].replace(/(, and|,|and) .*/, '') : null;
 
+  return match ? match[1].replace(/(, and|,|and) .*/, '') : null;  
+}
+
+function getYear(tooltipText: string) {
   const yearMatch = tooltipText.match(/\d{4}/);
-  const year = yearMatch ? yearMatch[0] : null;
-  
-  return { director, year }
+
+  return yearMatch ? yearMatch[0] : null;
 }
 
 async function scrapeFilms(url: string) {
@@ -31,14 +44,6 @@ async function scrapeFilms(url: string) {
     const filmItems = $(".js-collection-item");
 
     filmItems.each((_:number, el:cheerio.Element) => {
-      const filmId = $(el).attr('data-item-id');
-      const tooltipText = $(`#collection-tooltip-${filmId}`).find('p').first().text();
-      const { director, year } = getDirectorAndYear(tooltipText);
-      console.log(tooltipText);
-      console.log('\n');
-      console.log(director);
-      console.log(year);
-      console.log('\n')
       const film = setFilmData($, el);
 
       if (film) filmList.push(film);
