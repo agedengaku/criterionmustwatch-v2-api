@@ -3,7 +3,7 @@ import type { Film, RottenFilm } from '../types';
 import fs from 'fs';
 import path from 'path';
 
-const filePath = path.resolve(__dirname, '../../public', 'rotten_tomatoes.json');
+const filePath = path.resolve(__dirname, '../../public', 'rotten_tomatoes_v2.json');
 
 async function getRottenTomatoesData() {
   try {
@@ -47,13 +47,26 @@ async function appendReviews(filmsCollection: Film[]) {
   try {
     const rottenTomatoesData = await getRottenTomatoesData();
     const filmsCollectionWithReviews = filmsCollection.map(film => {
-      const matchedFilm = rottenTomatoesData.find((rottenFilm: RottenFilm) => film.title === rottenFilm.title);
+      const matchedFilmArray: RottenFilm[] = rottenTomatoesData.filter((rottenFilm: RottenFilm) => film.title === rottenFilm.title);
 
-      if (matchedFilm) {
+      if (matchedFilmArray.length > 1) {
+        const matchedFilm = findCorrectFilm(matchedFilmArray, film.year);
+
         film.review = matchedFilm.tomatoMeter;
         film.rottenLink = `m/${matchedFilm.id}`;
+
+        return film;
       }
 
+      if (matchedFilmArray.length === 1) {
+        const matchedFilm = matchedFilmArray[0];
+
+        film.review = matchedFilm.tomatoMeter;
+        film.rottenLink = `m/${matchedFilm.id}`;
+
+        return film;
+      }
+      
       return film;
     });
 
@@ -61,6 +74,35 @@ async function appendReviews(filmsCollection: Film[]) {
   } catch (error) {
     console.error('Error fetching data:', error);
   }
+}
+
+function findCorrectFilm(rottenFilmArray: RottenFilm[], year: string | null)  {
+  // First match the correct year.
+  return matchYear(rottenFilmArray, year);
+  // If there are multiple films with the same year or there is no match, match the correct director
+
+  // If there is still no match, get the film with the oldest year
+  // If there is are no years or all films have the same year, get the last one in the array
+}
+
+function matchYear(rottenFilmArray: RottenFilm[], year: string | null) {
+  if (year) {
+    const results = rottenFilmArray.filter((rottenFilmItem) => rottenFilmItem.releaseDateTheaters.substring(0, 4) === year)
+
+    if (results.length === 1) {
+      return results[0];
+    }
+
+    if (results.length === 0) {
+      return rottenFilmArray[rottenFilmArray.length - 1];
+    }
+
+    if(results.length > 1) {
+      return results[results.length - 1];
+    }
+  }
+
+  return rottenFilmArray[rottenFilmArray.length - 1];  
 }
 
 function generateCurrentMonthLastDayDate() {
